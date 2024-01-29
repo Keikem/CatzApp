@@ -7,9 +7,9 @@ class GimmeADogRemoteUseCase {
 
     private val repository: DogRepository = DogRepository()
 
-    fun gimme(): String {
+    suspend fun gimme(): String? {
         val dogUrl = repository.loadFromRemote()
-        repository.saveToLocal(LocalDog(id = "1", imageUrl = dogUrl))
+        dogUrl?.let { repository.saveToLocal(LocalDog(id = "1", imageUrl = it)) }
 
         return dogUrl
     }

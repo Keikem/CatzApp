@@ -3,6 +3,8 @@ package dev.keikem.catzapp.data.repository
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dev.keikem.catzapp.DatabaseHolder
+import dev.keikem.catzapp.NetworkHolder
+import dev.keikem.catzapp.data.api.DogsApi
 import dev.keikem.catzapp.data.local.Database
 import dev.keikem.catzapp.data.local.entity.LocalDog
 import dev.keikem.catzapp.data.remote.RemoteDog
@@ -15,9 +17,10 @@ import javax.net.ssl.HttpsURLConnection
 class DogRepository {
 
     private val database: Database? = DatabaseHolder.provideDb()
+    private val dogApi: DogsApi = NetworkHolder.provideDogApi
 
-    fun loadFromRemote(): String {
-        var urlConnection: HttpsURLConnection? = null
+    suspend fun loadFromRemote(): String? = dogApi.getDog()?.message
+      /*  var urlConnection: HttpsURLConnection? = null
         val imageUrl: String
         try {
             val url = URL("https://dog.ceo/api/breeds/image/random")
@@ -35,7 +38,7 @@ class DogRepository {
         }
 
         return imageUrl
-    }
+    } */
 
     fun loadFromLocal(): String? = database?.dogDao()?.get()?.imageUrl
 

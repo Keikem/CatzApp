@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -32,11 +33,22 @@ class CatFragment : Fragment(R.layout.fragment_cat), LifecycleEventObserver {
         val button = view.findViewById<Button>(R.id.button)
         val buttonLoad = view.findViewById<Button>(R.id.buttonLoad)
         val progress = view.findViewById<CircularProgressIndicator>(R.id.progress)
+        val errorText = view.findViewById<TextView>(R.id.errorText)
 
         viewModel?.imageUrl?.observe(viewLifecycleOwner) { url ->
-            if (url.isNotEmpty()) {
-                image.load(url)
-                progress.isVisible = false
+            when {
+                url == null -> {
+                    progress.isVisible = false
+                    errorText.isVisible = true
+                }
+
+                url.isNotEmpty() -> {
+                    image.load(url)
+                    progress.isVisible = false
+                    errorText.isVisible = false
+                }
+
+                else -> Unit
             }
         }
 
