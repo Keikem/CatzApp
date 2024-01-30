@@ -2,10 +2,9 @@ package dev.keikem.catzapp.domain.usecases
 
 import dev.keikem.catzapp.data.local.entity.LocalDog
 import dev.keikem.catzapp.data.repository.DogRepository
+import javax.inject.Inject
 
-class GimmeADogRemoteUseCase {
-
-    private val repository: DogRepository = DogRepository()
+class GimmeADogRemoteUseCase @Inject constructor(private val repository: DogRepository) {
 
     suspend fun gimme(): String? {
         val dogUrl = repository.loadFromRemote()

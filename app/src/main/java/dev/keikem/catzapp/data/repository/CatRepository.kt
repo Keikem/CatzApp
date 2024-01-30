@@ -1,15 +1,13 @@
 package dev.keikem.catzapp.data.repository
 
-import dev.keikem.catzapp.DatabaseHolder
-import dev.keikem.catzapp.NetworkHolder
+import dev.keikem.catzapp.data.api.CatsApi
+import dev.keikem.catzapp.data.local.dao.CatDao
 import dev.keikem.catzapp.data.local.entity.LocalCat
+import javax.inject.Inject
 
-class CatRepository {
+class CatRepository @Inject constructor(private val dao: CatDao, private val api: CatsApi) {
 
-    private val database = DatabaseHolder.provideDb()
-    private val catsApi = NetworkHolder.provideCatApi
-
-    suspend fun loadFromRemote(): String? = catsApi.getCat()?.get(0)?.url
+    suspend fun loadFromRemote(): String? = api.getCat()?.get(0)?.url
     /*   var urlConnection: HttpsURLConnection? = null
     val imageUrl: String
     try {
@@ -29,9 +27,9 @@ class CatRepository {
 
     return imageUrl*/
 
-    fun loadFromLocal(): String? = database?.catDao()?.get()?.imageUrl
+    fun loadFromLocal(): String? = dao.get()?.imageUrl
 
     fun saveToLocal(cat: LocalCat) {
-        database?.catDao()?.set(cat)
+        dao.set(cat)
     }
 }

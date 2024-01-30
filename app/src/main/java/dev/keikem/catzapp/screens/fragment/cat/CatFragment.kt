@@ -14,9 +14,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import coil.load
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import dagger.hilt.android.AndroidEntryPoint
 import dev.keikem.catzapp.R
 
 //Фрагмент, показывающии котика
+@AndroidEntryPoint
 class CatFragment : Fragment(R.layout.fragment_cat), LifecycleEventObserver {
 
     private var viewModel: CatViewModel? = null
@@ -35,17 +37,18 @@ class CatFragment : Fragment(R.layout.fragment_cat), LifecycleEventObserver {
         val progress = view.findViewById<CircularProgressIndicator>(R.id.progress)
         val errorText = view.findViewById<TextView>(R.id.errorText)
 
-        viewModel?.imageUrl?.observe(viewLifecycleOwner) { url ->
-            when {
-                url == null -> {
-                    progress.isVisible = false
-                    errorText.isVisible = true
-                }
-
-                url.isNotEmpty() -> {
-                    image.load(url)
+        viewModel?.state?.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is CatViewModel.State.ImageLoaded -> {
+                    image.load(state.url)
                     progress.isVisible = false
                     errorText.isVisible = false
+                }
+
+                is CatViewModel.State.Error -> {
+                    progress.isVisible = false
+                    errorText.isVisible = true
+                    errorText.text = state.message
                 }
 
                 else -> Unit

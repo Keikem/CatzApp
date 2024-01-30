@@ -1,11 +1,9 @@
 package dev.keikem.catzapp.domain.usecases
 
-import dev.keikem.catzapp.DatabaseHolder
 import dev.keikem.catzapp.data.repository.DogRepository
+import javax.inject.Inject
 
-class GimmeADogLocalUseCase {
-
-    private val repository: DogRepository = DogRepository()
+class GimmeADogLocalUseCase @Inject constructor(private val repository: DogRepository) {
 
     fun gimme(): String? = repository.loadFromLocal()
 }

@@ -13,8 +13,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import coil.load
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import dagger.hilt.android.AndroidEntryPoint
 import dev.keikem.catzapp.R
 
+@AndroidEntryPoint
 class DogFragment : Fragment(R.layout.fragment_cat), LifecycleEventObserver {
 
     private var viewModel: DogViewModel? = null

@@ -1,23 +1,33 @@
 package dev.keikem.catzapp.screens.fragment.cat
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.keikem.catzapp.data.repository.CatRepository
 import dev.keikem.catzapp.domain.usecases.GimmeACatLocalUseCase
 import dev.keikem.catzapp.domain.usecases.GimmeACatRemoteUseCase
+import dev.keikem.catzapp.domain.usecases.GimmeADogRemoteUseCase
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CatViewModel : ViewModel() {
+@HiltViewModel
+class CatViewModel @Inject constructor(
+    private val localUseCase: GimmeACatLocalUseCase,
+    private val remoteUseCase: GimmeACatRemoteUseCase
+) : ViewModel() {
 
-    private val gimmeACatRemoteUseCase: GimmeACatRemoteUseCase by lazy { GimmeACatRemoteUseCase() }
-    private val gimmeACatLocalUseCase: GimmeACatLocalUseCase by lazy { GimmeACatLocalUseCase() }
+    private var _state: MutableLiveData<State?> = MutableLiveData(null) // flow
+    val state: LiveData<State?> = _state
 
-    private var _imageUrl: MutableLiveData<String?> = MutableLiveData("")
-    val imageUrl: LiveData<String?> = _imageUrl
+    //UDF = Undirectonal data flow
+    sealed class State {
+        data class ImageLoaded(val url: String) : State()
+        data class Error(val message: String) : State()
+    }
 
     init {
         loadFromDatabase()
@@ -25,25 +35,31 @@ class CatViewModel : ViewModel() {
 
     private fun loadFromDatabase() {
         Thread {
-            val im = gimmeACatLocalUseCase.gimme()
-            im?.let { image -> _imageUrl.postValue(image) }
+            val im = localUseCase.gimme()
+            im?.let { image -> _state.postValue(State.ImageLoaded(url = image)) }
         }.start()
     }
 
-   /* fun loadFromRemoteThread() {
-        //Thread - отдельный поток выполнения, он отвечает за то где будет выполнятся операция
-        Thread {
-            Thread.sleep(5000)
-            _imageUrl.postValue(gimmeACatRemoteUseCase.gimme())
-        }.start()
-    } */
+    /* fun loadFromRemoteThread() {
+         //Thread - отдельный поток выполнения, он отвечает за то где будет выполнятся операция
+         Thread {
+             Thread.sleep(5000)
+             _imageUrl.postValue(gimmeACatRemoteUseCase.gimme())
+         }.start()
+     } */
 
     fun loadFromRemote() {
-        val coroutinExceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
-            _imageUrl.postValue(null)
+        val coroutineExceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
+
+            _state.postValue(
+                State.Error(
+                    message = throwable.message ?: "Не удалось получить картинку"
+                )
+            )
         }
-        viewModelScope.launch(Dispatchers.IO + coroutinExceptionHandler) {
-            _imageUrl.postValue( gimmeACatRemoteUseCase.gimme())
+        viewModelScope.launch(Dispatchers.IO + coroutineExceptionHandler) {
+            remoteUseCase.gimme()?.let { _state.postValue(State.ImageLoaded(url = it)) }
+                ?: _state.postValue(State.Error(message = "Значение не может быть пустым"))
         }
     }
 }

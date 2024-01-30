@@ -4,16 +4,22 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.keikem.catzapp.data.repository.DogRepository
+import dev.keikem.catzapp.domain.usecases.GimmeACatLocalUseCase
+import dev.keikem.catzapp.domain.usecases.GimmeACatRemoteUseCase
 import dev.keikem.catzapp.domain.usecases.GimmeADogLocalUseCase
 import dev.keikem.catzapp.domain.usecases.GimmeADogRemoteUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class DogViewModel : ViewModel() {
-
-    private val gimmeADogRemoteUseCase: GimmeADogRemoteUseCase by lazy { GimmeADogRemoteUseCase() }
-    private val gimmeADogLocalUseCase: GimmeADogLocalUseCase by lazy { GimmeADogLocalUseCase() }
+@HiltViewModel
+class DogViewModel @Inject constructor(
+    private val localUseCase: GimmeADogLocalUseCase,
+    private val remoteUseCase: GimmeADogRemoteUseCase
+) : ViewModel() {
 
 
     private var _imageUrl: MutableLiveData<String> = MutableLiveData("")
@@ -25,7 +31,7 @@ class DogViewModel : ViewModel() {
 
     private fun loadFromLocal() {
         Thread {
-            val im = gimmeADogLocalUseCase.gimme()
+            val im = localUseCase.gimme()
             im?.let { image -> _imageUrl.postValue(image) }
         }.start()
     }
@@ -40,8 +46,8 @@ class DogViewModel : ViewModel() {
 
     fun loadFromRemote() {
         viewModelScope.launch(Dispatchers.IO) {
-            delay(5000)
-            _imageUrl.postValue(gimmeADogRemoteUseCase.gimme())
+            //delay(5000)
+            _imageUrl.postValue(remoteUseCase.gimme())
         }
     }
 

@@ -1,6 +1,7 @@
 package dev.keikem.catzapp.screens.activity
 
 import androidx.appcompat.app.AppCompatActivity
+import dagger.hilt.android.AndroidEntryPoint
 import dev.keikem.catzapp.R
 
 /* Единственная активити в приложений
@@ -9,4 +10,5 @@ import dev.keikem.catzapp.R
 * 2) Можно делать красивые переходы между экранами, несколько активностей такого не позволяют
 */
 
+@AndroidEntryPoint
 class RootActivity : AppCompatActivity(R.layout.activity_root)
